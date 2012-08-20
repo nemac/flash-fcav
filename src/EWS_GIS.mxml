@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:multigraph="multigraph.*"
+	xmlns:gisviewer="edu.unca.nemac.gisviewer.*"
+	xmlns:flexiframe="http://code.google.com/p/flex-iframe/"
+	xmlns:mccune="com.dougmccune.controls.*" 
+	xmlns:autoComplete="com.adobe.flex.controls.*" 
+	layout="absolute" width="100%" height="100%" 
+	styleName="plain"
+	applicationComplete="initApp()" xmlns:local="*">
+	<mx:states>
+		<mx:State name="Printing">
+			<mx:RemoveChild target="{mapViewMenu}"/>
+			<mx:RemoveChild target="{mapViewLabel}"/>
+			<mx:RemoveChild target="{reportsMenu}"/>
+			<mx:RemoveChild target="{reportsButton}"/>
+			<mx:RemoveChild target="{reportsLabel}"/>
+			<mx:RemoveChild target="{linksHBox}"/>
+			<mx:RemoveChild target="{areaAC}"/>
+			<mx:RemoveChild target="{areaACLabel}"/>
+			<mx:RemoveChild target="{mapImageLabel}"/>
+			<mx:RemoveChild target="{layersPanel}"/>
+			<mx:RemoveChild target="{identifySuperPanel}"/>
+			<mx:RemoveChild target="{drawingPanel}"/>
+			<mx:RemoveChild target="{toggleTools}"/>
+			<mx:RemoveChild target="{toggleLayers}"/>
+			<!--
+			<mx:RemoveChild target="{toggleTimeSlider}"/>
+			-->
+			<mx:RemoveChild target="{toggleDrawing}"/>
+			<mx:RemoveChild target="{toggleAbout}"/>
+			<mx:RemoveChild target="{backgroundImageMenu}"/>
+			<mx:AddChild relativeTo="{mapChoicesHBox}"	>
+				<mx:Button id="printToPDFButton" label="Print to PDF" click="printMap(event)" />
+			</mx:AddChild>	
+			<mx:SetProperty target="{toolsPanel}" name="visible" value="false"/>
+		</mx:State>
+		<mx:State name="About">
+			<mx:AddChild relativeTo="{dp0}" position="lastChild">
+				<mx:Canvas id="canvasAbout" alpha="0.95" backgroundColor="#CCC7DA" width="546" 
+					horizontalCenter="0" height="421" verticalCenter="0" click="currentState='';toggleAbout.selected=true">
+					<mx:Label text="{dp0.title}" fontSize="16" fontWeight="bold" id="labelTitle" horizontalCenter="0" verticalCenter="-170"/>
+					<mx:Image width="200" height="200" id="imgLogos" source="assets/logos.png" scaleContent="false" autoLoad="true" horizontalCenter="0" verticalCenter="-24"/>
+					<mx:LinkButton label="FCAV Users Guide" fontSize="14" fontWeight="bold" click="navigateToURL(new URLRequest('http://forwarn.forestthreats.org/fcav/assets/FCAV_Users_Guide.pdf'))" horizontalCenter="0" verticalCenter="95" />
+					<mx:Label text="For information on this viewer, contact support at ews-support@nemac.org." fontSize="12" id="labelLogin" horizontalCenter="0" verticalCenter="125"/>
+					<mx:TextArea width="425" height="52" fontSize="10" id="labelAbout" editable="false" selectable="false" horizontalCenter="0" verticalCenter="175" tabEnabled="false">
+						<mx:text>This site is maintained by the University of North Carolina at Asheville's National Environmental Modeling and Analysis Center and the RENCI at UNC Asheville engagement site.</mx:text>
+					</mx:TextArea>
+					
+				</mx:Canvas>
+			</mx:AddChild>
+		</mx:State>
+	</mx:states>
+	<!-- set up bindable variables -->
+	<!-- these store data actually on map and in legend -->
+	<mx:ArrayCollection id="theMapLayers">
+		<!--stores all layers on map-->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theLegendArray">
+		<!--stores all legends on map-->
+	</mx:ArrayCollection>
+	
+	<!-- the following all come from the config.xml file -->
+	<mx:String id="theMapServerPath"></mx:String><!-- stores starting URL for ArcGIS map server -->
+	<mx:String id="theLegendServerPath"></mx:String><!-- stores path to legend images -->
+	<mx:ArrayCollection id="theServiceNameArray">
+		<!-- stores services to display in map-->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theLegendGroupArray">
+		<!--stores all legend groups (that require just one legend for many layers within a group layer)-->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theLayerGroupArray">
+		<!--stores all layer groups (that require just one legend for many layers with same base name)-->
+	</mx:ArrayCollection>
+	<mx:String id="legendType">WMS</mx:String><!-- stores if legend is WMS or saved images -->
+	<mx:ArrayCollection id="theMapImageArray">
+		<!-- stores all map background images and their service info -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theMapViewArray">
+		<!-- stores all map views and their group layers -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theMapZoomArray">
+		<!-- stores all map zooms and their extents -->
+	</mx:ArrayCollection>
+	<mx:String id="theDefaultMapZoomID">1</mx:String><!--stores default map zoom ID; default to US -->
+	<mx:ArrayCollection id="theReportArray">
+		<!-- stores all reports and their mapviews -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theReportMenuArray">
+		<!-- stores reports for menu for current view -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theLinksArray">
+		<!-- stores reports for links bar (external URLs) -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theToolViewArray">
+		<!-- stores views for each tool -->
+	</mx:ArrayCollection>
+		<mx:ArrayCollection id="theMetadataArray">
+		<!-- stores all metadata -->
+	</mx:ArrayCollection>
+	<mx:ArrayCollection id="theIdentifyResultsArray">
+		<!-- stores identify results -->
+	</mx:ArrayCollection>
+	<esri:GraphicsLayer id="drawingGraphicsLayer">
+		<!-- layer for drawing toolbar -->
+	</esri:GraphicsLayer>
+	
+	<!-- current state of map -->
+	<mx:String id="currentMapZoom"></mx:String><!-- stores current map zoom -->
+	<mx:String id="currentMapView"></mx:String><!-- stores current map view -->
+	<mx:String id="currentMapTool">Pan</mx:String><!-- stores current map tool; defaults to Pan -->
+	<mx:Number id="originalAppHeight"></mx:Number><!-- stores current map width -->
+	<mx:Number id="originalAppWidth"></mx:Number><!-- stores current map height -->
+	<mx:String id="currentShareURL"></mx:String><!-- stores current URL to share map -->
+ 	
+	<!-- set up public script variables -->
+	<mx:Script>
+		<![CDATA[
+			import com.esri.ags.geometry.Extent;
+			
+			import mx.collections.ArrayCollection;		
+            
+			// Embed the image used as the crosshair cursor       
+            [Embed(source="assets/crosshair.gif")]
+			public var crosshairCursor:Class;
+			
+			//code to toggle map state from external calling program
+			public function toggleMapState():void {
+				if (currentState == 'Thumbnail') {
+					currentState = '';
+					toolBoxToggleButtonBar.getChildAt(4).visible = true;
+					toolBoxToggleButtonBar.getChildAt(3).visible = true;
+					FlexGlobals.topLevelApplication.height = originalAppHeight;
+					FlexGlobals.topLevelApplication.width = originalAppWidth;
+				}
+				else {
+					currentState = 'Thumbnail';
+					toolBoxToggleButtonBar.getChildAt(4).visible = false;
+					toolBoxToggleButtonBar.getChildAt(3).visible = false;
+				}
+			}
+
+			//script to set map extent (will be called externally as well)
+			public function setMapExtent(areaID:String):void {
+				if (areaID == null) { return;}
+				
+				//find bbox values in data array
+				var areaFiltered:ArrayCollection = new ArrayCollection(locationDataAC);
+
+			    areaFiltered.filterFunction =
+			        function(item:Object):Boolean {
+			            return item.areaID == areaID;
+			        }
+			    areaFiltered.refresh();
+			    var areaObj:Object = areaFiltered.getItemAt(0);
+				theMap.extent = new Extent(areaObj.areaXMin,areaObj.areaYMin,
+					areaObj.areaXMax,areaObj.areaYMax,theMap.spatialReference);
+					
+				areaAC.text = areaObj.areaName;
+			}
+			
+			public function setMapShareURL():void {
+				updateShareURL();
+			}
+			
+			//called when AutoComplete closes - sets map extent
+			private function callSetMapExtent():void {
+				if ((areaAC.selectedItem == null) || (areaAC.selectedItem.areaID == null)) {
+					return;
+				}
+				else {
+					setMapExtent(areaAC.selectedItem.areaID);
+				}
+			}
+		]]>
+	</mx:Script>   
+
+    <!-- add styles -->
+	<mx:Style source="assets/MapViewer.css"/>
+	<mx:Style source="assets/SuperPanel/SuperPanel.css"/>
+	
+	<mx:Style>
+        @namespace s "library://ns.adobe.com/flex/spark";
+        @namespace mx "library://ns.adobe.com/flex/mx";
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|Navigation
+        {
+            skinClass: ClassReference("edu.unca.nemac.gisviewer.CustomNavigationSkin");
+            top: 25;
+    		left: NaN;
+    		right: 6;
+        }
+    </mx:Style>
+
+	<!-- Symbol for where the user clicked -->        
+	<esri:SimpleMarkerSymbol id="clickPtSym" style="x" color="0xFF0000" size="12"/>                
+	<!-- Symbol for tool results as Point -->        
+	<esri:SimpleMarkerSymbol id="toolPointSymbol" style="diamond" color="0xFFFF00" size="15"/>            
+	<!-- Symbol for tool results as Polyline -->        
+	<esri:SimpleLineSymbol id="toolPolylineSymbol" style="solid" color="0x00FF00" width="2" alpha="1"/>           
+	<!-- Symbol for tool results as Polygon -->     
+	<esri:SimpleFillSymbol id="toolPolygonSymbol" color="0x00FF00" alpha="0.5" style="solid"/>             
+	
+	<!-- Symbol for tool results as Point for Find results -->  
+	<esri:SimpleMarkerSymbol id="toolPointSymbolFind" style="diamond" color="0xFFD700" size="12"/>                        
+	<!-- Symbol for tool results as Point for selected Find result -->             
+	<esri:SimpleMarkerSymbol id="toolPointSymbolFindSelect" style="diamond" color="0x0000FF" size="12"/>                            
+	<!-- Symbol for tool results as Polyline for Find results -->        
+	<esri:SimpleLineSymbol id="toolPolylineSymbolFind" style="solid" color="0xFFD700" width="2" alpha="1"/>           
+	<!-- Symbol for tool results as Polyline for selected Find result -->        
+	<esri:SimpleLineSymbol id="toolPolylineSymbolFindSelect" style="solid" color="0x0000FF" width="2" alpha="1"/>           
+	<!-- Symbol for tool results as Polygon for Find results -->  
+	<esri:SimpleFillSymbol id="toolPolygonSymbolFind" color="0x999999" alpha="0.5" style="solid">
+		<esri:SimpleLineSymbol color="0xFFD700" width="1" alpha="1" style="solid" />      
+	</esri:SimpleFillSymbol>               
+	<!-- Symbol for tool results as Polygon for selected Find result -->             
+	<esri:SimpleFillSymbol id="toolPolygonSymbolFindSelect" color="0x999999" alpha="0.5" style="solid">           
+		<esri:SimpleLineSymbol color="0x0000FF" width="1" alpha="1" style="solid" />      
+	</esri:SimpleFillSymbol> 
+	
+	
+	<!-- Symbols for drawing shapes -->
+    <esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="square"/>
+    <esri:SimpleLineSymbol id="sls" width="3" color="0x00FF00"/>
+	<esri:SimpleFillSymbol id="sfs" color="0xFFFFFF" style="diagonalcross">
+	    <esri:outline>
+	        <esri:SimpleLineSymbol width="2" color="0x00FF00"/>
+	    </esri:outline>
+    </esri:SimpleFillSymbol>
+
+	<!--- time slider date formatter -->
+	<mx:DateFormatter id="timeSliderDateFormatter" formatString="MMMM D, YYYY"/>
+
+	<!-- add script modules -->
+	<mx:Script source="NEMAC_MapViewer_ImportStatements.as"/>
+	<mx:Script source="NEMAC_MapViewer_InitApp.as"/>
+	<mx:Script source="NEMAC_MapViewer_Interface.as"/>
+	<mx:Script source="NEMAC_MapViewer_Tools_ExportMap.as"/>
+	<!--<mx:Script source="NEMAC_MapViewer_Tools_FindSingleLayer.as"/>-->
+	<mx:Script source="NEMAC_MapViewer_Tools_Identify.as"/>
+	<mx:Script source="NEMAC_MapViewer_Tools_Phenograph.as"/>
+	<mx:Script source="NEMAC_MapViewer_Tools_PrintMap.as"/>
+	<mx:Script source="NEMAC_MapViewer_Tools_ShareMap.as"/>
+	<!--<mx:Script source="NEMAC_MapViewer_Tools_SpatialQuery.as"/>-->
+	<mx:Script source="NEMAC_MapViewer_Tools_TimeSlider.as"/>
+	
+	<!-- add data for auto complete for zooms -->
+	<mx:Script source="assets/data.as"/>
+	
+	<!-- add ESRI navigation tool bar for map -->
+	<esri:NavigationTool id="navToolbar" map="{theMap}"/>
+    
+    <esri:DrawTool id="drawToolbar" map="{theMap}"
+                       drawEnd="drawTool_drawEndHandler(event)"
+                       fillSymbol="{sfs}"
+                       graphicsLayer="{drawingGraphicsLayer}"
+                       lineSymbol="{sls}"
+                       markerSymbol="{sms}"/>
+
+	<!-- set up main canvas -->
+	<mx:Canvas id="appCanvas" x="0" y="0" width="100%" height="100%" >
+	 
+	<!-- setup map panel -->
+	<mx:Panel  id="dp0" title="Map Viewer"
+    	x="0" y="0" width="100%" height="100%" layout="absolute" titleStyleName="mainMapTitle">
+    <mx:VBox id="mainVBox" x="0" y="0" width="100%" height="100%" >
+    	
+	<!-- setup menus -->
+	<mx:HBox id="mapChoicesHBox" x="0" y="2" height="3%">
+    	<mx:Button id="toggleLayers" height="25" width="30" click="toggleLayersPanel()" toolTip="Toggle Map Layers"
+        	buttonMode="true" toggle="true" icon="@Embed(source='assets/navIcons/nav_layers.png')">
+        </mx:Button>
+        <mx:Button id="toggleTools" height="25" width="30" click="toggleToolsPanel()" toolTip="Toggle Map Tools"
+        	buttonMode="true" toggle="true" icon="@Embed(source='assets/navIcons/nav_tools.png')">
+        </mx:Button>
+		<!--
+        <mx:Button id="toggleTimeSlider" height="25" width="30" click="toggleTimeSliderPanel()" toolTip="Time Slider"
+        	buttonMode="true" toggle="true" selected="true" icon="@Embed(source='assets/navIcons/nav_time.png')">
+        </mx:Button>
+		-->
+        <mx:Button id="toggleDrawing" height="25" width="30" click="toggleDrawingPanel()" toolTip="Drawing Tools"
+        	buttonMode="true" toggle="true" selected="true" icon="@Embed(source='assets/navIcons/nav_draw.png')">
+        </mx:Button>
+        <mx:Button id="toggleAbout" height="25" width="30" click="toggleAboutPanel()" toolTip="About"
+        	buttonMode="true" toggle="true" selected="true" icon="@Embed(source='assets/navIcons/nav_help.png')">
+        </mx:Button>
+        
+        <mx:Spacer width="1%"/>
+        <mx:ToggleButtonBar id="toolBoxToggleButtonBar" height="25"  width="150"
+        	itemClick="toolBoxToggleButtonBarClickHandler(event);" buttonMode="true" toolTipField="tip">
+            <mx:dataProvider>
+                <mx:Array>
+                	<mx:Object tip="Pan" icon="@Embed(source='assets/navIcons/nav_pan.png')"/>
+					<mx:Object tip="Zoom In" icon="@Embed(source='assets/navIcons/nav_zoomin.png')" />
+					<mx:Object tip="Zoom Out" icon="@Embed(source='assets/navIcons/nav_zoomout.png')" />
+					<mx:Object tip="Identify" icon="@Embed(source='assets/navIcons/nav_identify.png')" id="identifyButton" />
+					<mx:Object tip="Graph NDVI" icon="@Embed(source='assets/navIcons/nav_chart.png')" id="chartButton"/>
+                </mx:Array>
+            </mx:dataProvider>
+        </mx:ToggleButtonBar>
+        <mx:ButtonBar id="toolBoxButtonBar" height="25" width="90"
+        	itemClick="toolBoxButtonBarClickHandler(event);" buttonMode="true" toolTipField="tip">
+        	<mx:dataProvider>
+                <mx:Array>
+                	<mx:Object tip="Previous Extent" icon="@Embed(source='assets/navIcons/nav_previous.png')"/>
+					<mx:Object tip="Next Extent" icon="@Embed(source='assets/navIcons/nav_next.png')" />
+					<mx:Object tip="Full Extent" icon="@Embed(source='assets/navIcons/nav_fullextent.png')" />
+                </mx:Array>
+            </mx:dataProvider>
+        </mx:ButtonBar>
+        <mx:Spacer width="2%" id="spacerOne"/>
+        <mx:Label text="Basemap"  fontWeight="bold" id="mapImageLabel"/>
+    	<mx:ComboBox id="backgroundImageMenu" top="0" right="0" width="100"
+    		dataProvider="{theMapImageArray}" 
+    		labelField="label" rowCount="10"
+    		change="changeMapImage(event);"      
+			/>
+      	<mx:Spacer width="2%"/>
+      	<mx:Label text="Theme"  fontWeight="bold" id="mapViewLabel"/>
+    	<mx:ComboBox id="mapViewMenu" top="0" width="275"
+    	    dataProvider="{theMapViewArray}" 
+            labelField="label" rowCount="10"
+            change="changeMapView(event);"
+            />
+   		<mx:Spacer width="2%"/>
+   		<mx:Label text="Find Area"  fontWeight="bold" id="areaACLabel"/>
+    	<autoComplete:AutoComplete id="areaAC" dataProvider="{locationDataAC}" labelField="areaName" width="180" 
+    		close="callSetMapExtent();"/>
+		<mx:Spacer width="2%"/>
+     	<mx:Label text="Reports"  fontWeight="bold" id="reportsLabel"/>
+    	<mx:ComboBox id="reportsMenu" top="0"   
+    	    dataProvider="{theReportMenuArray}" 
+            labelField="label" rowCount="10"
+            />
+        <mx:Button label="Run" fontWeight="bold" id="reportsButton" click="runReport(event)"/>
+    </mx:HBox>
+    
+    <!-- setup map and basic ESRI tiled services -->
+<!--		
+		<esri:Map id="theMap" styleName="myMapStyle" x="0" width="100%" height="95%" logoVisible="false" 
+				  panArrowsVisible="false" load="mapLoadHandler()" timeSlider="{timeSlider}"  
+				  extentChange="updateShareURL()" mapClick="mapClickHandler(event)" resize="resizeMapHandler(event)">
+			<esri:ArcGISTiledMapServiceLayer id="tiledESRILayer" visible="true" />
+		</esri:Map>
+-->
+		<esri:Map id="theMap" styleName="myMapStyle" x="0" width="100%" height="95%" logoVisible="false" 
+				  panArrowsVisible="false" load="mapLoadHandler()"
+				  extentChange="updateShareURL()" mapClick="mapClickHandler(event)" resize="resizeMapHandler(event)">
+			<esri:ArcGISTiledMapServiceLayer id="tiledESRILayer" visible="true" />
+		</esri:Map>
+	
+	<!-- set up links at bottom of map -->
+	<mx:HBox id="linksHBox" x="0" bottom="0" width="100%" height="2%">
+		<mx:LinkBar id="linksBar" top="0" left="0" labelField="name" 
+			dataProvider="{theLinksArray}" itemClick="openLink(event)" />
+        <mx:Spacer width="100%"/>
+        <mx:Label id="coordsLabel" top="0" right="0"/>
+    </mx:HBox>
+    </mx:VBox>
+    
+	<!-- setup identify window-->
+	<gisviewer:SuperPanel  id="identifySuperPanel" x="350" y="{(theMap.y)+25}" 
+		width="325" height="225" layout="absolute" visible="false"
+        showControls="true" title="Identify Results" enableResize="true">
+		<mx:VBox width="100%" height="100%">
+			<mx:ComboBox id="cbxIdentifySuperPanel" width="95%"
+				dataProvider="{theIdentifyResultsArray}" 
+    			labelField="name" rowCount="10" />
+    			<!--change="changeIdentifyResult(event);"  />-->
+			<mx:TextArea id="txtIdentifySuperPanel" 
+				htmlText="{cbxIdentifySuperPanel.selectedItem.text}"
+				width="95%" height="100%" editable="false" />
+		</mx:VBox>
+    </gisviewer:SuperPanel>
+    
+   <!-- setup drawing window-->
+	<gisviewer:SuperPanel  id="drawingPanel" x="350" y="{(theMap.y)+25}" 
+		width="482" height="73" layout="absolute" visible="false"
+        showControls="false" title="Drawing Tools" enableResize="false">
+	    <mx:ToggleButtonBar id="drawButtonBar" height="40" width="480"
+                            itemClick="drawButtonBar_itemClickHandler(event)"
+                            selectedIndex="-1"
+                            toggleOnClick="true" toolTipField="tip">
+            <mx:dataProvider>
+                <mx:Array>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_point.png')" tip="Point"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_line.png')" tip="Line "/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_freeline.png')" tip="Freehand Line"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_poly.png')" tip="Polygon"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_freepoly.png')" tip="Freehand Polygon"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_rect.png')" tip="Rectangle"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_circle.png')" tip="Circle"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_ellipse.png')" tip="Ellipse"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_clear.png')" tip="Clear"/> 
+		            <!--<mx:Object icon="@Embed(source='assets/navIcons/i_draw_redo.png')" tip="Redo"/>
+		            <mx:Object icon="@Embed(source='assets/navIcons/i_draw_undo.png')" tip="Undo"/>-->      
+	            </mx:Array>
+            </mx:dataProvider>
+        </mx:ToggleButtonBar>
+    </gisviewer:SuperPanel>
+    
+    <!-- setup layer list TOC (table of contents) -->
+	<gisviewer:SuperPanel  id="layersPanel" x="0" y="{(theMap.y)+5}" 
+		width="300" height="500" layout="absolute" 
+        showControls="false" title="Map Layers" enableResize="true">
+		<mx:Accordion x="0" y="0" width="100%" height="100%" id="layerAccordion" 
+			change="changeSelectedTool(event)" resize="resizeTOCs(event)">
+			<!-- tools as defined in Config File are added here -->
+		</mx:Accordion>
+    </gisviewer:SuperPanel>
+
+    <!-- setup tools - legend and share map are always included - other tools added on startup -->
+	<gisviewer:SuperPanel  id="toolsPanel" x="{(theMap.width)-275}" y="{(theMap.y)+5}" 
+		width="225" height="500" layout="absolute"
+        showControls="false" title="Map Tools" enableResize="true">
+        <mx:Accordion x="0" y="0" width="100%" height="100%" id="toolsAccordion" change="changeSelectedTool(event)">
+			<mx:Canvas label="Legend (click to clear layer)" width="100%" height="100%" id="legendCanvas">
+				<mx:VBox id="legendVBox" top="0" left="0" width="100%" height="100%">
+					<mx:Repeater id="tileListLegend" dataProvider="{theLegendArray}">
+		 	 	 	 	    <mx:Image x="0" 
+	                            horizontalAlign="left" name="{tileListLegend.currentItem.mapId}" 
+	                            source="{tileListLegend.currentItem.src}" scaleContent="false" 
+	                            toolTip="{tileListLegend.currentItem.name}" 
+	                            click="hideClickedLegendItem(event)"
+	                             />
+	                        <mx:HRule x="0" width="100%" />
+					</mx:Repeater>
+				</mx:VBox>
+			</mx:Canvas>
+		</mx:Accordion>
+    </gisviewer:SuperPanel>
+    
+    <!-- time slider panel -->
+    <gisviewer:SuperPanel  id="timeSliderPanel" x="{(theMap.x)+450}" y="{(theMap.y)+30}" 
+		width="420" height="155" layout="absolute" visible="false"
+        showControls="false" title="Time Slider" enableResize="false">
+        <mx:Canvas label="Time Slider" width="100%" height="100%" id="timeSliderCanvas">
+			<mx:VBox id="timeSliderVBox" width="100%" height="100%">
+				<esri:TimeSlider id="timeSlider" 
+                     top="10" width="100%"
+                     horizontalCenter="0" skinClass="edu.unca.nemac.gisviewer.timeSliderSkin"
+                     singleThumbAsTimeInstant="true"
+                     thumbMovingRate="1500"/>
+				<mx:ComboBox id="cbxTimeSlider" width="100%" labelField="label" change="cbxTimeSlider_change()"/>
+				<!--
+				<mx:HBox >
+				<mx:Label text="Start" />
+				<mx:ComboBox id="timeSliderStartDateMenu" labelField="label" change="setTimeSliderStartDate(event)" />
+				<mx:Label text="End" />
+				<mx:ComboBox id="timeSliderEndDateMenu" labelField="label" change="setTimeSliderEndDate(event)" />
+				</mx:HBox>
+				-->
+				<mx:HBox height="51">
+					<mx:Label id="timeSliderLabel" text="{timeSliderDateFormatter.format(timeSlider.timeExtent.startTime.toUTCString())}"/>
+					<mx:Button id="timeSliderLayerSettings" height="20" width="20" click="openTimeSliderLayerSettings(event, 'timeSliderLayer')"  
+						toolTip="Open Layer Settings" buttonMode="true" toggle="true" useHandCursor="true" icon="@Embed(source='assets/navIcons/layer_wrench.png')">
+				    </mx:Button>
+				    <mx:Image id="timeSliderLegendImage" height="51" width="140" />
+				</mx:HBox>
+				</mx:VBox>
+		</mx:Canvas>
+    </gisviewer:SuperPanel>
+   
+    </mx:Panel>	
+	</mx:Canvas>
+</mx:Application>

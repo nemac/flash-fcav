@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Used by ArcIMS_TOC.mxml and Dynamic_TOC.mxml -->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+    implements="mx.controls.listClasses.IDropInListItemRenderer">
+
+    <mx:Script>
+        <![CDATA[
+            import mx.controls.listClasses.BaseListData;
+			import mx.events.NumericStepperEvent
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectProxy;
+			
+            private var _listData:BaseListData;
+
+            // Embed the images used in the layer TOC      
+            [Bindable]
+            [Embed(source="/assets/navIcons/layer_wrench.png")]
+			public var layerPropertiesIcon:Class;
+			
+			public function get listData():BaseListData
+            {
+                return _listData;
+            }
+
+            public function set listData(value:BaseListData):void
+            {
+                _listData = value;
+            }
+
+            private function clickHandler(evt:MouseEvent, mapID:String):void
+            {	
+            	evt.currentTarget.selected = false;
+            	var thisLayerInfo:ObjectProxy = getLayerInfoObjectBylayerMapID(mapID);
+            	if (thisLayerInfo.settingsWindowOpen == false) {
+            		//open properties dialog
+            		var propDialog:LayerPropertiesDialog = LayerPropertiesDialog(PopUpManager.createPopUp(this, LayerPropertiesDialog, false)); 
+            		propDialog.layerMapID = mapID;
+            		propDialog.showLayerProperties();
+            	}
+            }
+            
+            private function getLayerInfoObjectBylayerMapID(layerMapID:String):ObjectProxy {
+	        	var mapID:String;
+	        	for (var i:uint=0; i< (this.parentApplication.theMapLayers.length); i++) {
+	            	if (this.parentApplication.theMapLayers[i].mapId == layerMapID) {
+	            		var theLayerInfoObject:ObjectProxy =  this.parentApplication.theMapLayers[i];
+	            		break;
+	            	}
+	            }
+	        	return theLayerInfoObject;
+	        }
+              
+        ]]>
+    </mx:Script>
+    <mx:Button id="layerSettings" height="20" width="20" click="clickHandler(event, data.mapId)" visible="{data.subLayerIds == null}" 
+		toolTip="Open Layer Settings" buttonMode="true" toggle="true" useHandCursor="true" icon="{layerPropertiesIcon}">
+    </mx:Button>
+</mx:Canvas>

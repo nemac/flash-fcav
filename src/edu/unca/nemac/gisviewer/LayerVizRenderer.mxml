@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Used by ArcIMS_TOC.mxml and Dynamic_TOC.mxml -->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+    implements="mx.controls.listClasses.IDropInListItemRenderer" >
+
+    <mx:Script>
+        <![CDATA[
+            import mx.controls.listClasses.BaseListData;
+
+            private var _listData:BaseListData;
+			
+			// Embed the images used in the layer TOC      
+            [Bindable]
+            [Embed(source="/assets/navIcons/layer_on.png")]
+			public var layerOnIcon:Class;
+			[Bindable]
+			[Embed(source="/assets/navIcons/layer_off.png")]
+			public var layerOffIcon:Class;
+			
+			public function get listData():BaseListData
+            {
+                return _listData;
+            }
+
+            public function set listData(value:BaseListData):void
+            {
+                _listData = value;
+            }
+
+            private function clickHandler(event:MouseEvent, layerID:int, mapId:String):void
+            {
+            	if (event.currentTarget.selected)
+                {
+                    LayerTOC(listData.owner).showLayer(layerID, mapId);
+                }
+                else
+                {
+                    LayerTOC(listData.owner).hideLayer(layerID, mapId);
+                }
+            }
+        ]]>
+    </mx:Script>
+	
+	<mx:Button id="layerVisible" height="20" width="20" click="clickHandler(event, data.id, data.mapId)" 
+		toolTip="{data.visible ? 'Turn Layer Off' : 'Turn Layer On'}" selected="{data.visible}"
+		visible="{data.subLayerIds == null}" buttonMode="true" toggle="true" useHandCursor="true" 
+        icon="{data.visible ? layerOnIcon : layerOffIcon}">
+    </mx:Button>
+
+</mx:Canvas>

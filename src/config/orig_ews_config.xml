@@ -1,0 +1,256 @@
+
+<config>
+	<application title="U.S. Forest Change Assessment Viewer" >
+	</application>
+	<extent xmin="-15000000" ymin="2000000" xmax="-6000000" ymax="7000000" xminZoom="-15000000" yminZoom="2000000" xmaxZoom="-6000000" ymaxZoom="7000000" wkid="102100">		
+	</extent>
+	<server map_path="http://www8.nemac.unca.edu/ArcGIS/" >
+	</server>
+	<services>
+		<service name="EWS_NDVI_2007-2009" folder="EWS" label="MODIS NDVI 2007-2009"/>
+		<service name="EWS_NDVI_2003-2006" folder="EWS" label="MODIS NDVI 2003-2006"/>
+		<service name="EWS_Cumulative_Integrals_2007-2009" folder="EWS" label="MODIS Cumulative NDVI Products 2007-2009"/>
+		<service name="EWS_Cumulative_Integrals_2003-2006" folder="EWS" label="MODIS Cumulative NDVI Products 2003-2006"/>
+		<service name="EWS_Parameters" folder="EWS" label="MODIS Phenology Parameters Products"/>
+		<service name="EWS_Derived_Products" folder="EWS" label="MODIS Phenology Derived Products"/>
+		<service name="FHM_Aerial_Disturbance_Surveys" folder="US" label="FHM Aerial Disturbance Surveys"/>
+		<service name="US_Fire" folder="US" label="Fire"/>
+		<service name="US_Landcover" folder="US" label="Landcover"/>
+		<service name="US_Climate" folder="US" label="Climate"/>
+		<service name="US_Hydrography" folder="US" label="Hydrography"/>
+		<service name="US_Ecoregions" folder="US" label="Ecoregions"/>
+		<service name="EWS_RSAC-FHTET_MODIS_2010_Change" folder="EWS" label="RSAC-FHTET MODIS 2010 Change"/>
+		<service name="EWS_RSAC-FHTET" folder="EWS" label="Archived NRT RSAC-FHTET"/>
+		<service name="EWS_EFETAC-NASA_MODIS_2010_Change" folder="EWS" label="EFETAC-NASA MODIS 2010 Change"/>
+		<service name="EWS_EFETAC-NASA" folder="EWS" label="Archived NRT EFETAC-NASA"/>
+		<service name="US_Elevation" folder="US" label="Elevation"/>
+		<service name="US_Roads" folder="US" label="Roads"/>
+		<service name="US_Jurisdictions" folder="US" label="Jurisdictions"/>
+	</services>
+	<images>
+		<image name="Streets" label="Streets" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer" />
+		<image name="Relief" label="Relief" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer" />
+		<image name="Terrain" label="Terrain" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer" />
+		<image name="Imagery" label="Imagery" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer" />
+		<image name="Topo_Map" label="Topo Map" url="http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer" />
+		<image name="USA_Topo" label="USA Topo" url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer" />
+		<image name="None" label="None" url="http://server.arcgisonline.com/ArcGIS/rest/services//MapServer" />
+	</images>
+	<legend type="Image" legendServerPath="http://ews.forestthreats.org/GIS/assets/Mashup_Legends/">
+		<legendGroup name="NDVI 2003" />
+		<legendGroup name="NDVI 2004" />
+		<legendGroup name="NDVI 2005" />
+		<legendGroup name="NDVI 2006" />
+		<legendGroup name="NDVI 2007" />
+		<legendGroup name="NDVI 2008" />
+		<legendGroup name="NDVI 2009" />
+		<legendGroup name="2003 Cumulative NDVI" />
+		<legendGroup name="2004 Cumulative NDVI" />
+		<legendGroup name="2005 Cumulative NDVI" />
+		<legendGroup name="2006 Cumulative NDVI" />
+		<legendGroup name="2007 Cumulative NDVI" />
+		<legendGroup name="2008 Cumulative NDVI" />
+		<legendGroup name="2009 Cumulative NDVI" />
+		<legendGroup name="2009 Cumulative NDVI" />
+		<legendGroup name="Parameter Means" />
+		<legendGroup name="Phenology- Parameters 2003" />
+		<legendGroup name="Phenology- Parameters 2004" />
+		<legendGroup name="Phenology- Parameters 2005" />
+		<legendGroup name="Phenology- Parameters 2006" />
+		<legendGroup name="Phenology- Parameters 2007" />
+		<legendGroup name="Phenology- Parameters 2008" />
+		<legendGroup name="Phenology- Parameters 2009" />
+		<legendGroup name="FHM Aerial Disturbance Surveys" />
+		<legendGroup name="Fire Perimeters" />
+		<legendGroup name="RSAC-FHTET 2010" />
+		<legendGroup name="EFETAC-NASA 2010" />
+		<legendGroup name="Fire Perimeters" />
+		<layerGroup name="Change" />
+		<layerGroup name="2010 Change" />
+		<layerGroup name="PRISM Avg Annual Precipitation" />
+		<layerGroup name="PRISM Avg Min Temperature" />
+		<layerGroup name="PRISM Avg Max Temperature" />
+		<layerGroup name="Fall Brown Down Length" />
+		<layerGroup name="Spring Leaf Out Length" />
+		<layerGroup name="Growing Season Length" />
+		<layerGroup name="Growing Season Midpoint" />
+		<layerGroup name="Max NDVI Midpoint" />
+		<layerGroup name="Peakyness" />
+		<layerGroup name="Fall Spring Ratio" />
+		<layerGroup name="Skewness" />
+		<layerGroup name="Slope Fall" />
+		<layerGroup name="Slope Spring" />
+		<layerGroup name="Mean Position" />
+		<layerGroup name="Mean Value" />
+		<layerGroup name="Mean XY Comp" />
+	</legend>
+	<mapviews>
+		<view name="CONUS_Vegetation_Monitoring_Tools" label="CONUS Vegetation Monitoring Tools">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />	
+		</view>
+		<view name="MODIS_2010_Forest_Change_Products" label="MODIS 2010 Forest Change Products">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="EWS_RSAC-FHTET_MODIS_2010_Change" />
+			<viewGroup name="EWS_RSAC-FHTET" />
+			<viewGroup name="EWS_EFETAC-NASA_MODIS_2010_Change" />
+			<viewGroup name="EWS_EFETAC-NASA" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />
+		</view>
+		<view name="MODIS_Phenology_Derived_Products" label="MODIS Phenology Derived Products">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />	
+			<viewGroup name="EWS_Derived_Products" />
+		</view>
+		<view name="MODIS_Phenology_Parameters_Products" label="MODIS Phenology Parameters Products">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />
+			<viewGroup name="EWS_Parameters" />
+		</view>
+		<view name="MODIS_Cumulative_NDVI_Products" label="MODIS Cumulative NDVI Products">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />	
+			<viewGroup name="EWS_Cumulative_Integrals_2003-2006" />
+			<viewGroup name="EWS_Cumulative_Integrals_2007-2009" />
+		</view>
+		<view name="MODIS_NDVI_Time_series_Profiling_Capability" label="MODIS NDVI Time series Profiling Capability">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />
+			<viewGroup name="EWS_NDVI_2003-2006" />
+			<viewGroup name="EWS_NDVI_2007-2009" />
+		</view>
+		<view name="MODIS_Phenology_Time_Series_2003-2009" label="MODIS Phenology Time Series 2003-2009">
+			<viewGroup name="US_Jurisdictions" />
+			<viewGroup name="US_Roads" />	
+			<viewGroup name="US_Hydrography" />
+			<viewGroup name="US_Elevation" />
+			<viewGroup name="US_Ecoregions" />
+			<viewGroup name="US_Climate" />
+			<viewGroup name="US_Landcover" />
+			<viewGroup name="US_Fire" />
+			<viewGroup name="FHM_Aerial_Disturbance_Surveys" />
+			<viewGroup name="MODIS_Change_Detection_Products" />
+			<viewGroup name="Drought_Monitor" />	
+			<viewGroup name="EWS_EFETAC-NASA" />
+			<viewGroup name="EWS_RSAC-FHTET" />
+			<viewGroup name="EWS_Derived_Products" />
+			<viewGroup name="EWS_Parameters" />
+			<viewGroup name="EWS_Cumulative_Integrals_2003-2006" />
+			<viewGroup name="EWS_Cumulative_Integrals_2007-2009" />
+			<viewGroup name="EWS_NDVI_2003-2006" />
+			<viewGroup name="EWS_NDVI_2007-2009" />
+		</view>
+	</mapviews>
+	<wmsLayers>
+		<wmsGroupLayer name="MODIS_Change_Detection_Products" label="MODIS NRT Change Detection Products" priorService="US_Elevation">
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="EFETAC-NASA_current" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=EFETAC-NASA_current&VERSION=1.1.1&FORMAT=image/png"/>	
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="EFETAC-NASA_previous1" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=EFETAC-NASA_previous1&VERSION=1.1.1&FORMAT=image/png"/>	
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="EFETAC-NASA_previous2" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=EFETAC-NASA_previous2&VERSION=1.1.1&FORMAT=image/png"/>	
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="RSAC-FHTET_current" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=RSAC-FHTET_current&VERSION=1.1.1&FORMAT=image/png"/>	
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="RSAC-FHTET_previous1" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=RSAC-FHTET_previous1&VERSION=1.1.1&FORMAT=image/png"/>	
+			<wmsLayer visible="false" url="http://fswms.nemac.org/ews?TRANSPARENT=true" srs="EPSG:3785" layers="RSAC-FHTET_previous2" styles="default" 
+			identify="true" legend="http://fswms.nemac.org/ewswgs84?SERVICE=WMS&REQUEST=GetLegendGraphic&layer=RSAC-FHTET_previous2&VERSION=1.1.1&FORMAT=image/png"/>	
+		</wmsGroupLayer>
+		<wmsGroupLayer name="Drought_Monitor" label="US Drought Monitor" priorService="US_Elevation">
+			<wmsLayer visible="false" url="http://torka.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/dm/service/usdm_current_wms.map&#38;#38;TRANSPARENT=true" srs="EPSG:900913" layers="usdm_current" styles="default"
+			identify="true" name="Current Drought Monitor" legend="http://ews.forestthreats.org/gis/assets/Mashup_Legends/Current_Drought_Monitor.PNG" />
+		</wmsGroupLayer>
+	</wmsLayers>
+	<tools>
+		<tool name="Print" label="Print Map" />
+		<tool name="Export" label="Export Map to JPG" />
+		<tool name="Identify" label="Identify Features" linkFields=""/>
+		<tool name="TimeSlider" label="Time Slider" helpText = "Slider">
+			<toolGroup name="EWS_EFETAC_NASA_Time" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_EFETAC-NASA/EFETAC-NASA_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_Time/ImageServer" 
+			label="Archived NRT EFETAC-NASA" type="raster" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2003_Baselines" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_EFETAC-NASA/EFETAC-NASA_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2003_Baselines/ImageServer" 
+			label="2010 MODIS Change-2003 Baseline" type="raster" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2007_Baselines" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_EFETAC-NASA/EFETAC-NASA_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2007_Baselines/ImageServer" 
+			label="2010 MODIS Change-2007 Baseline" type="raster" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2009_Baselines" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_EFETAC-NASA/EFETAC-NASA_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2009_Baselines/ImageServer" 
+			label="2010 MODIS Change-2009 Baseline" type="raster" />
+			<toolGroup name="EWS_RSAC_FHTET_Time" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_RSAC-FHTET/RSAC-FHTET_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_RSAC_FHTET_Time/ImageServer" 
+			label="Archived NRT RSAC-FHTET" type="raster" />
+			<toolGroup name="EWS_RSAC_FHTET_MODIS_Change_2010" 
+			legendUrl="http://www1.nemac.unca.edu/NEMAC_MapViewer/assets/Mashup_Legends/EWS/EWS_RSAC-FHTET/RSAC-FHTET_2010.png"
+			url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_RSAC_FHTET_MODIS_Change_2010/ImageServer" 
+			label="RSAC-FHTET MODIS 2010 Change" type="raster" />
+		</tool>
+		<tool name="Phenograph" label="Graph NDVI" helpText = "Click the map to see NDVI for the point. Or, enter coordinates and click Make Graph."/>
+		<tool name="ShareMap" label="Share this Map" helpText = "Copy the URL below to share this map with someone else."/>
+	</tools>
+	<links>
+		<link name="Aerial Survey GIS Handbook" url= "http://www.fs.fed.us/foresthealth/technology/pdfs/GISHandbook_body_apndxA-C.pdf"/>
+		<link name="Data Disclaimer" url= "http://www1.nemac.unca.edu/ews/npde/assets/disclaimer.htm"/>
+	</links>
+</config>
+

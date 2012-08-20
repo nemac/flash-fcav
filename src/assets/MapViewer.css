@@ -1,0 +1,34 @@
+/* CSS file */
+.mainMapTitle {
+    fontFamily: Arial;
+    fontSize: 16;
+    fontWeight: bold;
+}
+
+.myMapStyle
+{
+    rubberband-fill-alpha: 0.4; /*effects zoom box transperacny; 0.4 = 40% transparent; 1 = solid color*/
+    rubberband-fill-color: #FFFF00; /* makes the yellow color fill on zoom box */
+    rubberband-fill-style: inside; /* possible values are "inside" or "outside" */
+    rubberband-line-alpha: 1.0;
+    rubberband-line-color: #0000FF;/* makes the blue line around yellow fill for zoom box*/
+    rubberband-line-width: 5; /* effects thickness of blue line in zoom box*/
+}
+
+
+.myNavigationMinusButton
+{
+    disabledSkin: Embed(source="globe_icon.png");
+    downSkin: Embed(source="globe_icon.png");
+    overSkin: Embed(source="globe_icon.png");
+    upSkin: Embed(source="globe_icon.png");
+}
+
+.myNavigationPlusButton
+{
+    disabledSkin: Embed(source="home_icon.png");
+    downSkin: Embed(source="home_icon.png");
+    overSkin: Embed(source="home_icon.png");
+    upSkin: Embed(source="home_icon.png");
+}
+

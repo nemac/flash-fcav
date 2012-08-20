@@ -1,0 +1,105 @@
+<config>
+	<application title="U.S. Retrospective Forest Change Assessment Viewer" >
+	</application>
+	<extent xmin="-15000000" ymin="2000000" xmax="-6000000" ymax="7000000" xminZoom="-15000000" yminZoom="2000000" xmaxZoom="-6000000" ymaxZoom="7000000" wkid="102100">		
+	</extent>
+	<server map_path="http://www8.nemac.unca.edu/ArcGIS/" >
+	</server>
+	<services>
+		<service name="FHM_Aerial_Disturbance_Surveys" folder="US" label="FHM Aerial Disturbance Surveys"/>
+		<service name="US_Fire" folder="US" label="Fire"/>
+		<service name="US_Landcover" folder="US" label="Landcover"/>
+		<service name="US_Climate" folder="US" label="Climate"/>
+		<service name="US_Hydrography" folder="US" label="Hydrography"/>
+		<service name="US_Ecoregions" folder="US" label="Ecoregions"/>
+		<service name="EWS_RSAC-FHTET_MODIS_2010_Change" folder="EWS" label="RSAC-FHTET MODIS 2010 Change"/>
+		<service name="EWS_RSAC-FHTET" folder="EWS" label="Archived NRT RSAC-FHTET"/>
+		<service name="EWS_EFETAC-NASA_MODIS_2010_Change" folder="EWS" label="EFETAC-NASA MODIS 2010 Change"/>
+		<service name="EWS_EFETAC-NASA" folder="EWS" label="Archived NRT EFETAC-NASA"/>
+		<service name="US_Elevation" folder="US" label="Elevation"/>
+		<service name="US_Roads" folder="US" label="Roads"/>
+		<service name="US_Jurisdictions" folder="US" label="Jurisdictions"/>
+	</services>
+	<images>
+		<image name="Streets" label="Streets" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer" />
+		<image name="Relief" label="Relief" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer" />
+		<image name="Terrain" label="Terrain" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer" />
+		<image name="Imagery" label="Imagery" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer" />
+		<image name="Topo_Map" label="Topo Map" url="http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer" />
+		<image name="USA_Topo" label="USA Topo" url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer" />
+		<image name="None" label="None" url="http://server.arcgisonline.com/ArcGIS/rest/services//MapServer" />
+	</images>
+	<legend type="Image" legendServerPath="http://ews.forestthreats.org/GIS/assets/Mashup_Legends/">
+		<legendGroup name="NDVI 2003" />
+		<legendGroup name="NDVI 2004" />
+		<legendGroup name="NDVI 2005" />
+		<legendGroup name="NDVI 2006" />
+		<legendGroup name="NDVI 2007" />
+		<legendGroup name="NDVI 2008" />
+		<legendGroup name="NDVI 2009" />
+		<legendGroup name="2003 Cumulative NDVI" />
+		<legendGroup name="2004 Cumulative NDVI" />
+		<legendGroup name="2005 Cumulative NDVI" />
+		<legendGroup name="2006 Cumulative NDVI" />
+		<legendGroup name="2007 Cumulative NDVI" />
+		<legendGroup name="2008 Cumulative NDVI" />
+		<legendGroup name="2009 Cumulative NDVI" />
+		<legendGroup name="2009 Cumulative NDVI" />
+		<legendGroup name="Parameter Means" />
+		<legendGroup name="Phenology- Parameters 2003" />
+		<legendGroup name="Phenology- Parameters 2004" />
+		<legendGroup name="Phenology- Parameters 2005" />
+		<legendGroup name="Phenology- Parameters 2006" />
+		<legendGroup name="Phenology- Parameters 2007" />
+		<legendGroup name="Phenology- Parameters 2008" />
+		<legendGroup name="Phenology- Parameters 2009" />
+		<legendGroup name="FHM Aerial Disturbance Surveys" />
+		<legendGroup name="Fire Perimeters" />
+		<legendGroup name="RSAC-FHTET 2010" />
+		<layerGroup name="Change" />
+		<layerGroup name="2010 Change" />
+		<legendGroup name="EFETAC-NASA 2010" />
+		<legendGroup name="Fire Perimeters" />
+		<layerGroup name="PRISM Avg Annual Precipitation" />
+		<layerGroup name="PRISM Avg Min Temperature" />
+		<layerGroup name="PRISM Avg Max Temperature" />
+		<layerGroup name="Fall Brown Down Length" />
+		<layerGroup name="Spring Leaf Out Length" />
+		<layerGroup name="Growing Season Length" />
+		<layerGroup name="Growing Season Midpoint" />
+		<layerGroup name="Max NDVI Midpoint" />
+		<layerGroup name="Peakyness" />
+		<layerGroup name="Fall Spring Ratio" />
+		<layerGroup name="Skewness" />
+		<layerGroup name="Slope Fall" />
+		<layerGroup name="Slope Spring" />
+		<layerGroup name="Mean Position" />
+		<layerGroup name="Mean Value" />
+		<layerGroup name="Mean XY Comp" />
+	</legend>
+	<tools>
+		<tool name="Identify" label="Identify Features" linkFields=""/>
+		<tool name="TimeSlider" label="Time Slider" helpText = "Slider">
+			<toolGroup name="EWS_EFETAC_NASA_Time" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_Time/ImageServer" label="Archived NRT EFETAC-NASA" type="raster"
+				dates="2010-8-12,2010-8-20,2010-8-28-,2010-9-5,2010-9-13-,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8,2010-11-16,2010-11-24,2010-12-2,2010-12-10,2010-12-18,2010-12-26" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2003_Baselines" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2003_Baselines/ImageServer" label="2010 MODIS Change-2003 Baseline" type="raster"
+				dates="2010-3-5,2010-3-13,2010-3-21,2010-3-29,2010-4-6,2010-4-14,2010-4-22-,2010-4-30,2010-5-8,2010-5-16,2010-5-24,2010-6-1,2010-6-9,2010-6-17,2010-6-25,2010-7-3,2010-7-11,2010-7-19,2010-8-4,2010-8-12,2010-8-20,2010-8-28-,2010-9-5,2010-9-13-,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8,2010-11-16,2010-11-24,2010-12-2,2010-12-10,2010-12-18,2010-12-26" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2007_Baselines" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2007_Baselines/ImageServer" label="2010 MODIS Change-2007 Baseline" type="raster"
+				dates="2010-3-5,2010-3-13,2010-3-21,2010-3-29,2010-4-6,2010-4-14,2010-4-22-,2010-4-30,2010-5-8,2010-5-16,2010-5-24,2010-6-1,2010-6-9,2010-6-17,2010-6-25,2010-7-3,2010-7-11,2010-7-19,2010-8-4,2010-8-12,2010-8-20,2010-8-28-,2010-9-5,2010-9-13-,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8,2010-11-16,2010-11-24,2010-12-2,2010-12-10,2010-12-18,2010-12-26" />
+			<toolGroup name="EWS_EFETAC_NASA_MODIS_Change_2009_Baselines" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_EFETAC_NASA_MODIS_Change_2009_Baselines/ImageServer" label="2010 MODIS Change-2009 Baseline" type="raster"
+				dates="2010-3-5,2010-3-13,2010-3-21,2010-3-29,2010-4-6,2010-4-14,2010-4-22-,2010-4-30,2010-5-8,2010-5-16,2010-5-24,2010-6-1,2010-6-9,2010-6-17,2010-6-25,2010-7-3,2010-7-11,2010-7-19,2010-8-4,2010-8-12,2010-8-20,2010-8-28-,2010-9-5,2010-9-13-,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8,2010-11-16,2010-11-24,2010-12-2,2010-12-10,2010-12-18,2010-12-26" />
+			<toolGroup name="EWS_RSAC_FHTET_Time" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_RSAC_FHTET_Time/ImageServer" label="Archived NRT RSAC-FHTET" type="raster"
+				dates="2010-6-17,2010-6-25,2010-7-3,2010-7-11,2010-7-19,2010-7-27,2010-8-12,2010-8-20,2010-8-28,2010-9-5,2010-9-13,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8" />
+			<toolGroup name="EWS_RSAC_FHTET_MODIS_Change_2010" url="http://www8.nemac.unca.edu/ArcGIS/rest/services/EWS/EWS_RSAC_FHTET_MODIS_Change_2010/ImageServer" label="RSAC-FHTET MODIS 2010 Change" type="raster"
+				dates="2010-6-17,2010-6-25,2010-7-3,2010-7-11,2010-7-19,2010-7-27,2010-8-12,2010-8-20,2010-8-28,2010-9-5,2010-9-13,2010-9-21,2010-9-29,2010-10-7,2010-10-15,2010-10-23,2010-10-31,2010-11-8" />
+			
+		</tool>
+		<tool name="Phenograph" label="Graph NDVI" helpText = "Click the map to see NDVI for the point. Or, enter coordinates and click Make Graph."/>
+		<tool name="ShareMap" label="Share this Map" helpText = "Copy the URL below to share this map with someone else."/>
+	</tools>
+	<links>
+		<link name="Aerial Survey GIS Handbook" url= "http://www.fs.fed.us/foresthealth/technology/pdfs/GISHandbook_body_apndxA-C.pdf"/>
+		<link name="Data Disclaimer" url= "http://www1.nemac.unca.edu/ews/npde/assets/disclaimer.htm"/>
+	</links>
+</config>
+

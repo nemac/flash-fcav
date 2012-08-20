@@ -1,0 +1,44 @@
+Panel {
+    headerHeight: 26;
+    roundedBottomCorners: true;
+    borderThicknessTop: 0;
+    borderThicknessBottom: 3;
+    borderThicknessLeft: 3;
+    borderThicknessRight: 3;
+    /*titleStyleName: "mypanelTitle";*/
+}
+.mypanelTitle {
+    fontFamily: Arial;
+    fontSize: 16;
+    fontWeight: bold;
+}
+.closeBtn {
+    upSkin:        Embed('/assets/SuperPanel/closeButton.png');
+    overSkin:      Embed('/assets/SuperPanel/closeButton.png');
+    downSkin:      Embed('/assets/SuperPanel/closeButton.png');
+    disabledSkin:  Embed('/assets/SuperPanel/closeButton.png');
+}
+.increaseBtn {
+    upSkin:        Embed('/assets/SuperPanel/increaseButton.png');
+    overSkin:      Embed('/assets/SuperPanel/increaseButton.png');
+    downSkin:      Embed('/assets/SuperPanel/increaseButton.png');
+    disabledSkin:  Embed('/assets/SuperPanel/increaseButton.png');
+}
+.decreaseBtn {
+    upSkin:        Embed('/assets/SuperPanel/decreaseButton.png');
+    overSkin:      Embed('/assets/SuperPanel/decreaseButton.png');
+    downSkin:      Embed('/assets/SuperPanel/decreaseButton.png');
+    disabledSkin:  Embed('/assets/SuperPanel/decreaseButton.png');
+}
+.minBtn {
+    upSkin:        Embed('/assets/SuperPanel/decreaseButton.png');
+    overSkin:      Embed('/assets/SuperPanel/decreaseButton.png');
+    downSkin:      Embed('/assets/SuperPanel/decreaseButton.png');
+    disabledSkin:  Embed('/assets/SuperPanel/decreaseButton.png');
+}
+.resizeHndlr {
+    upSkin:        Embed('/assets/SuperPanel/resizeHandler.png');
+    overSkin:      Embed('/assets/SuperPanel/resizeHandler.png');
+    downSkin:      Embed('/assets/SuperPanel/resizeHandler.png');
+    disabledSkin:  Embed('/assets/SuperPanel/resizeHandler.png');
+}

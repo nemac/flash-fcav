@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="Layer Properties" showCloseButton="true" 
+	close="closeDialog(event)"
+	x="200" y="400">
+   <mx:Script>
+       <![CDATA[
+		import mx.managers.PopUpManager;
+		import mx.events.CloseEvent;
+		import mx.utils.ObjectProxy;
+		
+		import com.esri.ags.Map;
+        import com.esri.ags.layers.DynamicMapServiceLayer;
+		  
+		private var _layerMapID:String; //layer ID
+		private var thisLayerInfo:ObjectProxy; //current layer info
+		
+        public function get layerMapID():String
+        {
+            return _layerMapID;
+        }
+        public function set layerMapID(value:String):void
+        {
+            _layerMapID = value;
+        }
+        public function showLayerProperties():void {
+        	//set properties
+        	thisLayerInfo = getLayerInfoObjectBylayerMapID(layerMapID);
+        	thisLayerInfo.settingsWindowOpen = true;
+        	
+        	layerName.text = thisLayerInfo.name;
+        	layerAlphaSlider.value = thisLayerInfo.transparency;
+        	if (thisLayerInfo.type == "WMS") {
+        		layerIdentifyHBox.visible = thisLayerInfo.identifyFlag;
+        	}
+        	layerIdentifyFlag.selected = thisLayerInfo.identifyFlag;
+        }
+        
+        private function setLayerAlpha():void {
+        	//set transparency
+        	var transValue:uint = layerAlphaSlider.value;
+        	var theGISMap:Map = this.parentApplication.theMap;
+        	var theLayer:DynamicMapServiceLayer = DynamicMapServiceLayer(theGISMap.getLayer(_layerMapID));
+            theLayer.alpha = 1.0 - (transValue/100);  
+            
+            //save settings to layer info array
+            thisLayerInfo.transparency = transValue;      	
+        }
+        
+        private function setLayerProperties():void { 
+            //save settings to layer info array
+            thisLayerInfo.identifyFlag = layerIdentifyFlag.selected;
+        }
+        
+        private function getLayerInfoObjectBylayerMapID(layerMapID:String):ObjectProxy {
+        	var mapID:String;
+        	for (var i:uint=0; i< (this.parentApplication.theMapLayers.length); i++) {
+            	if (this.parentApplication.theMapLayers[i].mapId == layerMapID) {
+            		var theLayerInfoObject:ObjectProxy =  this.parentApplication.theMapLayers[i];
+            		break;
+            	}
+            }
+        	return theLayerInfoObject;
+        }
+        
+       	private function myDataTipFunc(val:uint):String {
+            return (String(val) +"%");
+        }
+
+		private function closeDialog(event : CloseEvent) : void {
+			setLayerProperties();
+			this.parentApplication.setMapShareURL();
+			thisLayerInfo.settingsWindowOpen = false;
+			PopUpManager.removePopUp(this); // close this dialog
+		}
+       ]]>
+   </mx:Script>
+   <mx:VBox>
+      <mx:Label id="layerName" fontWeight="bold"  width="209"/>
+      <mx:Label text="Select Layer Transparency"  />
+      <mx:HSlider id="layerAlphaSlider" minimum="0" maximum="100" 
+            dataTipPlacement="top" tickColor="black" 
+            snapInterval="5" tickInterval="10" 
+            dataTipFormatFunction="myDataTipFunc" change="setLayerAlpha()"
+            labels="['0%','100%']" allowTrackClick="true" liveDragging="true" />    
+      <mx:HBox id="layerIdentifyHBox">
+      		<mx:CheckBox id="layerIdentifyFlag" />
+      		<mx:Label text="Include Layer in Identify Results"  />	
+      </mx:HBox>       
+      <mx:HBox>
+      		<mx:Button label="OK" click="closeDialog(null)"/>
+      </mx:HBox>
+   </mx:VBox>
+</mx:TitleWindow>

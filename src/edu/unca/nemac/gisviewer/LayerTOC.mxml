@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:AdvancedDataGrid xmlns:mx="http://www.adobe.com/2006/mxml" showHeaders="false" verticalGridLineColor="0xFFFFFFFF" 
+    left="0" top="0" selectable="false" borderColor="0xFFFFFFFF" width="95%" height="95%"
+    sortableColumns="false" resizableColumns="false" alternatingItemColors="[0xFFFFFFFF,0xFFFFFFFF]">
+
+    <mx:Script>
+        <![CDATA[
+        	import mx.controls.DataGrid;
+        	import com.esri.ags.Map;
+            import com.esri.ags.layers.DynamicMapServiceLayer;
+            import mx.collections.ArrayCollection;
+            import mx.utils.ObjectProxy;
+			import mx.events.ResizeEvent;
+			
+			private var _serviceName:String;
+			private var _serviceFolder:String;
+			
+            private var _layerArray:ArrayCollection;
+            private var _layerChanged:Boolean;
+			
+			public function resizeTOC(evt:ResizeEvent):void {
+				this.percentWidth = 95;
+				this.percentHeight = 95;
+				visColumn.width=20;
+				alphaColumn.width=20;
+				nameColumn.width=this.width-40;
+			}
+            public function get serviceName():String
+            {
+                return _serviceName;
+            }
+            public function set serviceName(value:String):void
+            {
+                _serviceName = value;
+                //invalidateProperties();
+            }
+            
+            public function get serviceFolder():String
+            {
+                return _serviceFolder;
+            }
+            public function set serviceFolder(value:String):void
+            {
+                _serviceFolder = value;
+                //invalidateProperties();
+            }
+            
+            public function get layerArray():ArrayCollection
+            {
+                return _layerArray;
+            }
+            public function set layerArray(value:ArrayCollection):void
+            {
+                _layerArray = value;
+                _layerChanged = true;
+                invalidateProperties();
+            }
+
+            override protected function commitProperties():void
+            {
+                if (_layerChanged) {
+                    _layerChanged = false;
+                    if (_layerArray) {
+                       setDataProvider();
+                    }
+                }
+
+                // calling this last fixes an issue when the layer is set late via AS
+                super.commitProperties();
+            }
+
+            private function setDataProvider():void
+            {
+                dataProvider = _layerArray;
+            }
+
+            public function showLayer(layerID:int, mapId:String):void
+            {
+                var theLayerInfoObject:ObjectProxy = getLayerInfoObjectByMapId(mapId); 
+                theLayerInfoObject.visible = true;
+                cursorManager.setBusyCursor();
+
+                var theGISMap:Map = this.parentApplication.theMap;
+                var theLayer:DynamicMapServiceLayer = DynamicMapServiceLayer(theGISMap.getLayer(mapId));
+                theLayer.addEventListener(Event.COMPLETE, removeBusyCursor, false, 0, true);
+                theLayer.visible = true;
+                
+                this.parentApplication.setMapShareURL();
+                
+                if (this.parentApplication.legendType == "WMS") {
+                	addLegendItem(layerID, "None", "");
+                }
+                else if (this.parentApplication.legendType == "Image") {
+                	var addLegend:Boolean = false;
+                	var addLegendID:int = layerID;
+                	var groupType:String;
+					var groupIdentifier:String;
+	
+              		//is layer stand alone? if so add legend
+		  			if (theLayerInfoObject.parentLayerId == -1) {
+		  				addLegend = true;  //not part of any group
+		  				groupType = "None";
+		  			}
+		  			else if ((theLayerInfoObject.type == "WMS") && (theLayerInfoObject.legend != "")) {
+		  				addLegend = true;  //we have a WMS legend
+		  				groupType = "None";
+		  			}
+		  			else {//add legend if not part of a legend group, or of part of legend group and no other layers in group are visible
+		  				var theParentLayerInfoObject:ObjectProxy = getLayerInfoObject(theLayerInfoObject.parentLayerId, _serviceName);
+		  				
+		  				var layerBelongsToLegendGroup:Boolean = false;
+		  				var layerBelongsToLayerGroup:Boolean = false;
+		  				
+		  				//first see if layer belongs to a layer group
+		  				for (j=0; j<this.parentApplication.theLayerGroupArray.length; j++) {
+		  					var layerGroupName:String = this.parentApplication.theLayerGroupArray[j];
+		  					//if (theLayerInfoObject.name.slice((0-layerGroupName.length), theLayerInfoObject.name.length) == layerGroupName) {
+		  					if (theLayerInfoObject.name.split(layerGroupName).length > 1) {
+		  						layerBelongsToLayerGroup = true;
+		  						break;
+		  					} //see if current layer is in layer group
+		  				} //loop over all layer groups
+		  				
+		  				//if not part of a layer group, see if layer belongs to a legend group
+		  				if (layerBelongsToLayerGroup == false) {
+		  					layerBelongsToLegendGroup = (this.parentApplication.theLegendGroupArray.getItemIndex(theParentLayerInfoObject.name) != -1);
+		  				}
+		  				
+		  				//now test if legend for layer needs to be on
+		  				if ((layerBelongsToLayerGroup == false) && (layerBelongsToLegendGroup == false)) {
+		  					addLegend = true;  //not part of a legend group or layer group
+		  					groupType = "None";
+		  				}
+		  				else if (layerBelongsToLayerGroup) {
+	  						addLegend = true;
+		  					addLegendID = theLayerInfoObject.parentLayerId;
+		  					groupType = "Layer";
+  							groupIdentifier = layerGroupName;
+  							//now see if any other layers with same layer name are turned on
+  							for (var k:int=0;k<this.parentApplication.theMapLayers.length; k++) {
+  								if (this.parentApplication.theMapLayers[k].name != theLayerInfoObject.name) {
+	  								//if (this.parentApplication.theMapLayers[k].name.slice((0-layerGroupName.length), this.parentApplication.theMapLayers[k].name.length) == layerGroupName) {
+	  								if (this.parentApplication.theMapLayers[k].name.split(layerGroupName).length > 1) {
+	  									if (this.parentApplication.theMapLayers[k].visible == true) {
+	  										addLegend = false; //another layer in legend group is visible
+	  										break;
+	  									} //layer is visible
+	  								} // map layer is part of same layer group
+	  							} //if layer is not current layer we're testing
+  							} //each layer
+		  				}
+		  				else if (layerBelongsToLegendGroup) {
+		  					addLegend = true;
+		  					addLegendID = theLayerInfoObject.parentLayerId;
+		  					groupType = "Legend";
+		  					groupIdentifier = String(addLegendID);
+		  					//now see if any other layers in same legend group are turned on
+  							for (var j:int=0; j<theParentLayerInfoObject.subLayerIds.length; j++) {
+		  						var theSubLayerInfoObject:ObjectProxy = getLayerInfoObject(theParentLayerInfoObject.subLayerIds[j], _serviceName);
+		  						if (theLayerInfoObject.name != theSubLayerInfoObject.name) {
+		  							if (theSubLayerInfoObject.visible == true) {
+		  								addLegend = false; //another layer in legend group is visible
+		  								break;
+		  							}
+		  						} //sublayer is not current layer in main loop
+		  					} //each layer in group
+		  				} //layer is part of legend group
+ 		  			} //layer has parent (if part of a group)
+ 					
+	                if (addLegend == true) {
+		             	addLegendItem(layerID,groupType,groupIdentifier);
+	                }//add legend or not
+	                
+                }// legend if WMS or Image
+            }
+
+			public function addLegendItem(layerID:int,groupType:String,groupIdentifier:String):void
+            {
+            	var legendInfo:ObjectProxy = new ObjectProxy;
+				var legendUrl:String;
+				
+            	if (this.parentApplication.legendType == "WMS") {
+            		var layerArrayLength:uint = getLayerArrayLength(_serviceName);
+            		legendUrl = this.parentApplication.theLegendServerPath + "arcgisoutput/" + _serviceFolder + "_" + _serviceName + "_MapServer/wms/default";
+            		legendInfo.id = layerID;
+					legendInfo.name = getLayerInfoObject(layerID, serviceName).name;
+					legendInfo.mapId = getLayerInfoObject(layerID, serviceName).mapId;
+					legendInfo.serviceName = serviceName;
+					legendInfo.layerCounter = getLayerInfoObject(layerID, serviceName).layerCounter;
+					legendInfo.src = legendUrl + (layerArrayLength - layerID) + ".png"
+				}
+            	else if (this.parentApplication.legendType == "Image") {
+            		legendUrl = this.parentApplication.theLegendServerPath + _serviceFolder + "/" + _serviceName + "/";
+            		legendInfo.id = layerID;
+            		legendInfo.name = getLayerInfoObject(layerID, serviceName).name;
+            		legendInfo.mapId = getLayerInfoObject(layerID, serviceName).mapId;
+            		legendInfo.serviceName = serviceName;
+            		legendInfo.layerCounter = getLayerInfoObject(layerID, _serviceName).layerCounter;
+            		legendInfo.groupType = groupType;
+					if (groupType == "Layer") {
+            			legendInfo.src = legendUrl + groupIdentifier.replace(/ /g, "_") + ".PNG";
+            			legendInfo.groupLayer = groupIdentifier;
+            		}
+            		else if (groupType == "Legend") {
+            			legendInfo.src = legendUrl + getLayerInfoObject(getLayerInfoObject(layerID, _serviceName).parentLayerId, _serviceName).name.replace(/ /g, "_") + ".PNG";
+            			legendInfo.groupLayer = uint(groupIdentifier);
+            		}
+            		else {
+            			if (getLayerInfoObject(layerID, serviceName).type == "WMS") {
+            				legendInfo.src = getLayerInfoObject(layerID, serviceName).legend;
+            			}
+            			else {
+	            			legendInfo.src = legendUrl + getLayerInfoObject(layerID, _serviceName).name.replace(/ /g, "_") + ".PNG";
+            			}
+					}
+            	}
+            	
+				//find where to add new item into array based on layer id order
+				if (this.parentApplication.theLegendArray.length == 0) {
+					index = 0;
+				}
+				else {
+					var index:int = 0;
+					if (this.parentApplication.theLegendArray[0].layerCounter < legendInfo.layerCounter) {
+						index = 0;
+					}
+					else if (this.parentApplication.theLegendArray[this.parentApplication.theLegendArray.length-1].layerCounter > legendInfo.layerCounter) {
+						index = this.parentApplication.theLegendArray.length;
+					}
+					else {
+						for (var i:int=0; i<(this.parentApplication.theLegendArray.length-1); i++) {
+							if ((this.parentApplication.theLegendArray[i].layerCounter > legendInfo.layerCounter) && (this.parentApplication.theLegendArray[i+1].layerCounter < legendInfo.layerCounter)) {
+								index = i+1;
+								break;
+							}
+						}	
+					}
+				}
+				this.parentApplication.theLegendArray.addItemAt(legendInfo,index);
+				cursorManager.removeBusyCursor();
+            }
+                  
+            public function getLayerArrayLength(thisService:String):uint {
+                   //get count of layers in current service
+                   var layerCount:uint = 0;
+                   for (var i:uint=0; i<(_layerArray.length); i++) {
+                           if (_layerArray[i].serviceName == thisService) {
+                                   layerCount++;
+                           }
+                   }
+                   return layerCount;
+            }
+                       
+            public function hideClickedLayer(mapId:String):void 
+            {
+            	//get legend item for clicked legend ID
+            	var legendIndex:uint;
+            	for (var i:uint=(this.parentApplication.theLegendArray.length-1); i>=0; i--) {
+            		if (this.parentApplication.theLegendArray[i].mapId == mapId) {
+            			legendIndex = i;
+            			break;
+            		}
+            	}
+            	var layerID:int = this.parentApplication.theLegendArray[legendIndex].id;
+            	var theLayerInfoObject:ObjectProxy = getLayerInfoObjectByMapId(mapId);
+                
+            	//now call hideLayer for needed layers
+            	if (this.parentApplication.theLegendArray[legendIndex].groupType == "None") {
+            		hideLayer(layerID, mapId); //only one layer
+            	}
+            	else if (this.parentApplication.theLegendArray[legendIndex].groupType == "Legend") { //turn off all group layers
+            		var theParentLayerInfoObject:ObjectProxy =  getLayerInfoObject(getLayerInfoObject(layerID, _serviceName).parentLayerId, serviceName);
+               		for (var j:int=0; j<theParentLayerInfoObject.subLayerIds.length; j++) {
+               			var theSubLayerObject:ObjectProxy = getLayerInfoObject(theParentLayerInfoObject.subLayerIds[j], _serviceName);
+		  				hideLayer(theSubLayerObject.id, theSubLayerObject.mapId);
+		  			}	
+            	}
+            	else if (this.parentApplication.theLegendArray[legendIndex].groupType == "Layer") { //turn off all related layers
+            		var groupLayerName:String = this.parentApplication.theLegendArray[legendIndex].groupLayer;
+            		for (var k:int=0;k<this.parentApplication.theMapLayers.length; k++) {
+						if (this.parentApplication.theMapLayers[k].visible == true) {
+  							//if (this.parentApplication.theMapLayers[k].name.slice((0-this.parentApplication.theLegendArray[legendIndex].groupLayer.length), this.parentApplication.theMapLayers[k].name.length) == this.parentApplication.theLegendArray[legendIndex].groupLayer) {
+            				if (this.parentApplication.theMapLayers[k].name.split(groupLayerName).length > 1) {
+            					hideLayer(this.parentApplication.theMapLayers[k].id, this.parentApplication.theMapLayers[k].mapId);
+        					}
+        				}
+            		}
+            	}
+            	else {
+            		hideLayer(layerID, mapId); //WMS legend
+            	}
+            }
+            
+            public function hideLayer(layerID:int, mapId:String):void
+            {
+            	var theLayerInfoObject:ObjectProxy = getLayerInfoObjectByMapId(mapId);
+                theLayerInfoObject.visible = false;
+                
+                var theGISMap:Map = this.parentApplication.theMap;
+                var theLayer:DynamicMapServiceLayer = DynamicMapServiceLayer(theGISMap.getLayer(mapId));
+                theLayer.visible = false;
+                
+                this.parentApplication.setMapShareURL();
+               	
+                if (this.parentApplication.legendType == "WMS") {
+                	removeLegendItem(mapId, "None", "");
+                }
+                else if (this.parentApplication.legendType == "Image") {
+                	var removeLegend:Boolean = false;
+                	var removeLegendID:String = mapId;
+                	var groupType:String;
+					var groupIdentifier:String;
+	
+              		//is layer stand alone? 
+		  			if (theLayerInfoObject.parentLayerId == -1) {
+		  				removeLegend = true;  //not part of any group
+		  				groupType = "None";
+		  			}
+		  			else {
+		  				var theParentLayerInfoObject:ObjectProxy = getLayerInfoObject(theLayerInfoObject.parentLayerId, _serviceName);
+		  				var layerBelongsToLegendGroup:Boolean = false;
+		  				var layerBelongsToLayerGroup:Boolean = false;
+		  				
+		  				//first see if layer belongs to a layer group
+		  				for (j=0; j<this.parentApplication.theLayerGroupArray.length; j++) {
+		  					var layerGroupName:String = this.parentApplication.theLayerGroupArray[j];
+		  					//if (theLayerInfoObject.name.slice((0-layerGroupName.length), theLayerInfoObject.name.length) == layerGroupName) {
+		  					if (theLayerInfoObject.name.split(layerGroupName).length > 1) {
+		  						layerBelongsToLayerGroup = true;
+		  						break;
+		  					} //see if current layer is in layer group
+		  				} //loop over all layer groups
+		  				
+		  				//if not part of a layer group, see if layer belongs to a legend group
+		  				if (theLayerInfoObject.type == "WMS") {
+		  					layerBelongsToLegendGroup = false;
+		  				}
+		  				else if (layerBelongsToLayerGroup == false) {
+		  					layerBelongsToLegendGroup = (this.parentApplication.theLegendGroupArray.getItemIndex(theParentLayerInfoObject.name) != -1);
+		  				}
+		  				
+		  				//now test if legend for layer needs to be on
+		  				if ((layerBelongsToLayerGroup == false) && (layerBelongsToLegendGroup == false)) {
+		  					removeLegend = true;  //not part of a legend group or layer group
+		  					groupType = "None";
+		  				}
+		  				
+		  				else if (layerBelongsToLayerGroup) {
+	  						removeLegend = true;
+		  					removeLegendID = theLayerInfoObject.parentLayerId;
+		  					groupType = "Layer";
+  							groupIdentifier = layerGroupName;
+  							//now see if any other layers with same layer name are turned on
+  							for (var k:int=0;k<this.parentApplication.theMapLayers.length; k++) {
+  								if (this.parentApplication.theMapLayers[k].name != theLayerInfoObject.name) {
+	  								//if (this.parentApplication.theMapLayers[k].name.slice((0-layerGroupName.length), this.parentApplication.theMapLayers[k].name.length) == layerGroupName) {
+	  								if (this.parentApplication.theMapLayers[k].name.split(layerGroupName).length > 1) {
+	  									if (this.parentApplication.theMapLayers[k].visible == true) {
+	  										removeLegend = false; //another layer in legend group is visible
+	  										groupIdentifier = layerGroupName;
+	  										break;
+	  									} //layer is visible
+	  								} // map layer is part of same layer group
+	  							} //if layer is not current layer we're testing
+  							} //each layer
+		  				}
+		  				else if (layerBelongsToLegendGroup) {
+		  					removeLegend = true;
+		  					removeLegendID = getLayerInfoObject(theLayerInfoObject.parentLayerId, _serviceName).id;
+		  					groupType = "Legend";
+		  					groupIdentifier = String(removeLegendID);
+		  					for (var j:int=0; j<theParentLayerInfoObject.subLayerIds.length; j++) {
+		  						var theSubLayerInfoObject:ObjectProxy = getLayerInfoObject(theParentLayerInfoObject.subLayerIds[j], _serviceName);
+		  						if (theLayerInfoObject.name != theSubLayerInfoObject.name) {
+		  							if (theSubLayerInfoObject.visible == true) {
+		  								removeLegend = false; //another layer in legend group is visible
+		  								break;
+		  							}
+		  						} //sublayer is not current layer in main loop
+		  					} //each layer in group
+		  				} //layer is part of legend group
+ 		  			} //layer has parent (if part of a group)
+		  			
+	                if (removeLegend == true) {
+		             	removeLegendItem(removeLegendID, groupType, groupIdentifier);
+	                }//remove legend or not
+	                
+                }// legend if WMS or Image
+            }
+            
+            public function removeLegendItem(mapId:String, groupType:String, groupIdentifier:String):void
+            {
+
+            	//search array collection, find legend item for layer id, and remove
+            	for (i=(this.parentApplication.theLegendArray.length-1); i>=0; i--) {_serviceName
+            		if (groupType == "Legend") {
+            			if ((this.parentApplication.theLegendArray[i].groupType == "Legend") 
+            				&& (this.parentApplication.theLegendArray[i].groupLayer == groupIdentifier) 
+            				&& (this.parentApplication.theLegendArray[i].serviceName == _serviceName)) {
+            				this.parentApplication.theLegendArray.removeItemAt(i);
+            				break;
+            			}
+            		}
+            		else if (groupType == "None") {
+            			if (this.parentApplication.theLegendArray[i].mapId == mapId) {
+            				this.parentApplication.theLegendArray.removeItemAt(i);
+            				break;
+            			}
+            		}
+            	}
+            	
+            	//if image legend, check for groups
+            	if (this.parentApplication.legendType == "Image") {
+	            	//now...if this legend item is part of a layer group we may have wrong ID, so test and remove them all
+	            	if (groupType == "Layer") {
+	            		for (var i:int=(this.parentApplication.theLegendArray.length-1); i>=0; i--) {
+	            			if ((this.parentApplication.theLegendArray[i].groupType == "Layer") && (this.parentApplication.theLegendArray[i].groupLayer == groupIdentifier)) {
+	            				this.parentApplication.theLegendArray.removeItemAt(i);
+	            				break;
+	            			}
+	            		}
+	            	}
+            	}
+            }
+
+            private function getLayerInfoObject(layerID:uint, serviceName:String):ObjectProxy {
+            	for (var i:uint=0; i< (this.parentApplication.theMapLayers.length); i++) {
+                	if ((this.parentApplication.theMapLayers[i].id == layerID) && (this.parentApplication.theMapLayers[i].serviceName == serviceName)) {
+                		var theLayerInfoObject:ObjectProxy =  this.parentApplication.theMapLayers[i];
+                		break;
+                	}
+                }
+            	return theLayerInfoObject;
+            }
+            
+            private function getLayerInfoObjectByMapId(mapId:String):ObjectProxy {
+            	for (var i:uint=0; i< (this.parentApplication.theMapLayers.length); i++) {
+                	if (this.parentApplication.theMapLayers[i].mapId == mapId) {
+                		var theLayerInfoObject:ObjectProxy =  this.parentApplication.theMapLayers[i];
+                		break;
+                	}
+                }
+            	return theLayerInfoObject;
+            }
+ 
+            private function removeBusyCursor(event:Event):void
+            {
+                cursorManager.removeBusyCursor();
+            }
+            
+            private function colStyleFunction(data:Object, col:AdvancedDataGridColumn):Object {
+            	if(data.subLayerIds != null)
+                 	return {fontWeight:"bold"};
+ 
+             	return null;
+            }
+          	private function colStyleFunction2(data:Object, col:AdvancedDataGridColumn):Object {
+            	if(data.subLayerIds != null)
+                 	return {fontWeight:"bold",textAlign:"center"};
+             	return null;
+            }
+           
+        ]]>
+    </mx:Script>
+
+    <mx:columns>
+        <mx:AdvancedDataGridColumn id="visColumn" dataField="visible" headerText="Visible" width="20" resizable="false"
+            itemRenderer="edu.unca.nemac.gisviewer.LayerVizRenderer" styleFunction="colStyleFunction2"/>
+        <mx:AdvancedDataGridColumn id="alphaColumn" dataField="transparency" headerText="Trans." width="20" resizable="false"
+            itemRenderer="edu.unca.nemac.gisviewer.LayerPropertiesRenderer" styleFunction="colStyleFunction2"/>
+        <mx:AdvancedDataGridColumn id="nameColumn" dataField="name" headerText="Layer Name" styleFunction="colStyleFunction" 
+        	showDataTips="true" dataTipField="name" width="{this.width-40}" resizable="true"/>
+    </mx:columns>
+
+</mx:AdvancedDataGrid>
+
