@@ -159,33 +159,53 @@ private function configXMLLoaded(evt:Event):void {
             break;
 
         case "extent":
+            /**
+             *  There are two types of extents that need to be stored
+             *          1) The start map extent
+             *          2) The zoom to full extent (the globe button)
+             *  There are two different cases that are handled
+             *          1) If there is no shared extent, the full extent is
+             *             used as the start map extent
+             *          2) If there is a shared extent, shared map extent is
+             *             used as the start map extent, but the full extent
+             *             is still preserved as the full extent
+             **/
+
+            // Bounds for the zoom to full extent
             var xmin:Number;
             var ymin:Number;
             var xmax:Number;
             var ymax:Number;
             var wkid:int;
-            //if we have a shared extent, use that, else use config extent
+
+            // No shared extent, so use the full extent as the start
             if (sharedExtent == "") {
                 xmin = theNode.attributes.xmin;
                 ymin = theNode.attributes.ymin;
                 xmax = theNode.attributes.xmax;
                 ymax = theNode.attributes.ymax;
                 wkid = theNode.attributes.wkid;
-
-                //make extent and set map extent
                 theOriginalMapExtent = new Extent(xmin,ymin,xmax,ymax,new SpatialReference(wkid));
                 theMap.extent = theOriginalMapExtent.expand(1.1);
             }
+            // Shared extent, so use the shared as the start, but preserve the full
             else {
-                xmin = sharedExtent.split(",")[0];
-                ymin = sharedExtent.split(",")[1];
-                xmax = sharedExtent.split(",")[2];
-                ymax = sharedExtent.split(",")[3];
+                // Set the zoom to max extent
+                xmin = theNode.attributes.xmin;
+                ymin = theNode.attributes.ymin;
+                xmax = theNode.attributes.xmax;
+                ymax = theNode.attributes.ymax;
                 wkid = theNode.attributes.wkid;
-
-                //make extent and set map extent
                 theOriginalMapExtent = new Extent(xmin,ymin,xmax,ymax,new SpatialReference(wkid));
-                theMap.extent = theOriginalMapExtent
+
+                // Set the start extent
+                var sharedXMin:Number = sharedExtent.split(",")[0];
+                var sharedYMin:Number = sharedExtent.split(",")[1];
+                var sharedXMax:Number = sharedExtent.split(",")[2];
+                var sharedYMax:Number = sharedExtent.split(",")[3];
+                var sharedWkid:int = theNode.attributes.wkid;
+                var sharedMapExtent:Extent = new Extent(sharedXMin,sharedYMin,sharedXMax,sharedYMax,new SpatialReference(sharedWkid));
+                theMap.extent = sharedMapExtent;
             }
             break;
 
@@ -1276,6 +1296,25 @@ private function doActionsToBeDoneOnceUponStartupAfterMapLoading():void {
     }
     if (accgp != null) {
         layerAccordion.selectedChild = accgp;
+    }
+
+    /**
+     *  If the getChildByName method still has not returned a selected
+     *  accordion pane, loop through all accordion children and compare
+     *  their IDs to the selected layer group defined in the config file.
+     *  If a layer group matches, set the selected accordion member by
+     *  index number.
+     **/
+    if(accgp == null){
+        var layerAccordionChildren:Array = layerAccordion.getChildren();
+        var childIndex:int = 0;
+        for(var i:int = 0; i<layerAccordionChildren.length; i++){
+            if(layerAccordionChildren[i].id == selectedLayerAccordionGroupName+"_Canvas"){
+                childIndex = i;
+                break;
+            }
+        }
+        layerAccordion.selectedIndex = childIndex;
     }
 
     actionsToBeDoneOnceUponStartupAfterMapLoadingDone = true;
