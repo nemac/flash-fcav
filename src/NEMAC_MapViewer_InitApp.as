@@ -107,7 +107,12 @@ private function initApp():void {
     //when it ends, it loads the main ArcGIS server layers
     //cursorManager.setBusyCursor();
     var theConfigFile:String = FlexGlobals.topLevelApplication.parameters.configFile;
-    var loader:URLLoader = new URLLoader(new URLRequest(this.applicationUrlPrefix + "/config/" + theConfigFile + "_config.xml"));
+	if ((theConfigFile.substring(0,1) !== '/') && (theConfigFile.substr(0,7) !== 'http://')) {
+		// if theConfigFile does not start with '/' or 'http://', it must be a relative URL, so
+		// interpret it relative to the location of the application
+		theConfigFile = this.applicationUrlPrefix + "/" + theConfigFile;
+	}
+    var loader:URLLoader = new URLLoader(new URLRequest(theConfigFile));
     loader.addEventListener(Event.COMPLETE, configXMLLoaded);
     loader.addEventListener(IOErrorEvent.IO_ERROR, anXMLLoadError);
 }
