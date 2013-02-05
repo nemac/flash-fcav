@@ -115,7 +115,7 @@ def validate_deploy_dst(dst):
     # ...if we got this far, all is well
     return True
     
-def deploy(tag, dst):
+def deploy(tag, dst, configFile):
     ###
     ### Deploy the named tag to the named dst dir
     ###
@@ -145,6 +145,16 @@ def deploy(tag, dst):
     system(p.render("(cd .stage/{{{tag}}} ; tar cf - .) | (cd {{{dst}}} ; tar xf -)",
                        { 'tag' : tag,
                          'dst' : dst }))
+    # edit the deployed index.html to change the configFile setting
+    print "editing configFile setting in deployed index.html..."
+    content = ""
+    f = open(dst + "/index.html", "r")
+    for line in f:
+        content = content + re.sub(r'configFile\s*=\s*[^\'\"]*', 'configFile='+configFile, line)
+    f.close()
+    f = open(dst + "/index.html", "w")
+    f.write(content)
+    f.close()
     # remove other-write and group-write permission on the dst dir:
     system(p.render("chmod -R g-w,o-w {{{dst}}}", { 'dst' : dst }))
     # clean up staging dir
@@ -180,10 +190,11 @@ if __name__ == "__main__":
         try:
             tag = standardize_version_tag(sys.argv[2])
             dst = re.sub(r'/$', '', sys.argv[3]) # be sure to remove any trailing '/' from dst dir
+            configFile = sys.argv[4]
         except:
-            print "usage: fcav deploy TAG DESTINATION-DIRECTORY"
+            print "usage: fcav deploy TAG DESTINATION-DIRECTORY CONFIG_FILE_URL"
             sys.exit(-1)
-        deploy(tag, dst)
+        deploy(tag, dst, configFile)
         sys.exit(0)
 
 
