@@ -111,21 +111,8 @@ def validate_deploy_dst(dst):
     #   make sure dst exists:
     if not os.path.exists(dst):
         return False
-    #   make sure dst contains "/var/Config.py":
-    if not os.path.exists(dst + "/var/Config.py"):
-        return False
-    #   load that "/var/Config.py"
-    sys.path.append(dst + "/var")
-    import Config
-    #   make sure that the BASE_DIR that the Config.py points to is in fact the same as dst:
-    if os.stat(dst).st_ino != os.stat(Config.BASE_DIR).st_ino:
-        return False
-    #   Make sure that the "/var/Config.py" file that BASE_DIR contains is the same as the
-    #   one in dst.  This is actually redundant, since we just validated that the containing
-    #   dirs are the same.
-    if os.stat(dst + "/var/Config.py").st_ino != os.stat(Config.BASE_DIR + "/var/Config.py").st_ino:
-        return False
-    # If we got this far, all is well
+    # Nothing else to check...
+    # ...if we got this far, all is well
     return True
     
 def deploy(tag, dst):
@@ -147,9 +134,9 @@ def deploy(tag, dst):
     system("/bin/rm -rf .stage")
     os.mkdir(".stage")
     system(p.render("cat {{{tgzfile}}} | ( cd .stage ; tar xfz - )", { 'tgzfile' : tgzfile }))
-    # remove all files from dst except 'var' subdir:
+    # remove all files from dst
     print "cleaning old files from %s..." % dst
-    for f in [f for f in os.listdir(dst) if f != 'var']:
+    for f in [f for f in os.listdir(dst)]:
         system(p.render("/bin/rm -rf {{{dst}}}/{{{f}}}",
                            { 'dst' : dst,
                              'f'   : f }))
@@ -158,11 +145,8 @@ def deploy(tag, dst):
     system(p.render("(cd .stage/{{{tag}}} ; tar cf - .) | (cd {{{dst}}} ; tar xf -)",
                        { 'tag' : tag,
                          'dst' : dst }))
-    # remove other-write and group-write permission on the dst html dir:
-    system(p.render("chmod -R g-w,o-w {{{dst}}}/html", { 'dst' : dst }))
-    # run fscron in newly deploy dst dir:
-    print "running fscron in %s..." % dst
-    system(p.render("cd {{{dst}}}/msconfig ; ./fscron", { 'dst' : dst }))
+    # remove other-write and group-write permission on the dst dir:
+    system(p.render("chmod -R g-w,o-w {{{dst}}}", { 'dst' : dst }))
     # clean up staging dir
     print "cleaning up..."
     os.unlink(tgzfile)
