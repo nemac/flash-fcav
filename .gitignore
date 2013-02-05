@@ -6,3 +6,5 @@ bin-debug/
 ## .flexProperties
 .settings/
 ## .project
+
+*.tgz
