@@ -57,8 +57,19 @@ private function getShareURL():void {
 /*xxxx
     		layerString = layerString + theMapLayers[i].mapId + ","
 xxxx*/
-    		layerString = layerString + theMapLayers[i].lid + ","
-
+    		layerString = layerString + theMapLayers[i].lid + ",";
+				
+			// The following is a workaround for the problem related to NaN values showing up in
+			// the share URL string when the app was launched from a share URL.  Apparently that
+			// problem results from theMapLayers[i].transparency sometimes not being correctly
+			// initialized, so we fix the issue here by checking to make sure that it has been
+			// given a value that is a number, and if not, initialize it to 0.  (The correct solution
+			// would be to find the place in the code where it should have been initialized in the first
+			// place and fix it there.)
+			if (!(theMapLayers[i].transparency is Number)) {
+				theMapLayers[i].transparency = 0;
+			}
+			
     		alphaString = alphaString + String(1.0 - (theMapLayers[i].transparency/100)) + ","
     	}
     }
