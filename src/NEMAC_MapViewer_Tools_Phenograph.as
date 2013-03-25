@@ -100,7 +100,7 @@ private function phenographClickHandler(evt:MapMouseEvent):void {
 	//show Multigraph
 	multigraphXCoordVal = String(multigraphPoint.x);
 	multigraphYCoordVal = String(multigraphPoint.y);
-	var urlString:String = "http://www3.nemac.unca.edu/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+multigraphXCoordVal+","+multigraphYCoordVal;
+	var urlString:String = "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+multigraphXCoordVal+","+multigraphYCoordVal;
 	var mGraph:ClosableTitleWindow = Multigraph.createPopUp(urlString,685,385,windowLabel,theMap,null,false); 
 	
 	cursorManager.removeBusyCursor();
@@ -176,7 +176,7 @@ private function phenographOpenFromLatLong(xValue:String, yValue:String):void {
 		
 		//show Multigraph window
 		var windowLabel:String = "MODIS NDVI for Lat: " + multigraphYCoord.text + " Lon: " + multigraphXCoord.text;
-		var urlString:String = "http://www3.nemac.unca.edu/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+multigraphXCoordVal+","+multigraphYCoordVal;
+		var urlString:String = "http://rain.nemac.org/timeseries/tsmugl_product.cgi?args=CONUS_NDVI,"+multigraphXCoordVal+","+multigraphYCoordVal;
 		var mGraph:ClosableTitleWindow = Multigraph.createPopUp(urlString,685,385,windowLabel,theMap,null,false);   
 		cursorManager.removeBusyCursor();
 		
